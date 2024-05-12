@@ -1,0 +1,10 @@
+{
+  "Author": "ViMaSter",
+  "Name": "Bank Statement",
+  "Punchline": "Shows gil spread across regions, data centers, characters and retainers.",
+  "Description": "Shows gil spread across regions, data centers, characters and retainers.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "gil"
+  ]
+}
