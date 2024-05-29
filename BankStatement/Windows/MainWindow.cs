@@ -36,6 +36,9 @@ public class MainWindow : Window, IDisposable
     public override void Draw()
     {
         ImGui.Text($"Current standings");
+        
+        var totalGil = currentStanding.regions.Values.Sum(dc => dc.dataCenters.Values.Sum(w => w.worlds.Values.Sum(c => c.characters.Values.Sum(ch => ch.Gil + ch.Retainers.Values.Sum(r => r.Gil)))));
+        ImGui.Text($"Total: {totalGil.AddSpacing()} gil");
 
         ImGui.Spacing();
         
