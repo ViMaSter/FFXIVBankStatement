@@ -70,7 +70,7 @@ public class MainWindow : Window, IDisposable
                     {
                         var totalGilForCharacter = character.Gil + character.Retainers.Values.Sum(r => r.Gil);
                         ImGui.SetCursorPosX(80);
-                        ImGui.Text($"Character: {totalGilForCharacter.AddSpacing()} Gil");
+                        ImGui.Text($"Character: {character.Gil.AddSpacing()} Gil");
                         ImGui.SetCursorPosX(80);
                         if (!ImGui.CollapsingHeader($"{characterName} (Total: {totalGilForCharacter.AddSpacing()} gil)"))
                         {
