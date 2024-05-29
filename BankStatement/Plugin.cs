@@ -120,13 +120,25 @@ public sealed class Plugin : IDalamudPlugin
             unsafe
             {
                 var homeWorld = ClientState.LocalPlayer?.HomeWorld.GetWithLanguage(ClientLanguage.English);
-                var homeWorldName = homeWorld!.Name.ToString();
-                var homeWorldDataCenter = homeWorld.DataCenter.Value!.Name;
-                var homeWorldRegion = homeWorld.DataCenter.Value.Region.GetRegionName();
+                var homeWorldName = homeWorld?.Name.ToString();
                 
-                if (homeWorld.DataCenter.Value == null)
+                if (homeWorld?.DataCenter.Value == null)
                 {
                     PluginLog.Warning("Current character world data center is null");
+                    continue;
+                }
+                
+                var homeWorldDataCenter = homeWorld.DataCenter.Value?.Name.ToString();
+                if (string.IsNullOrEmpty(homeWorldDataCenter))
+                {
+                    PluginLog.Warning("Current character world data center is null");
+                    continue;
+                }
+                
+                var homeWorldRegion = homeWorld.DataCenter?.Value?.Region.GetRegionName();
+                if (string.IsNullOrEmpty(homeWorldRegion))
+                {
+                    PluginLog.Warning("Current character world region is null");
                     continue;
                 }
                 
@@ -137,6 +149,7 @@ public sealed class Plugin : IDalamudPlugin
                 }
                 
                 var currentCharacterName = ClientState.LocalPlayer?.Name.TextValue;
+                
                 if (currentCharacterName == null || string.IsNullOrEmpty(currentCharacterName))
                 {
                     PluginLog.Warning("Current character name is null");
