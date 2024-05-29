@@ -1,21 +1,19 @@
-﻿using System.Collections.Generic;
-using Dalamud.Game.Command;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-using System.Threading;
-using Dalamud;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.STD;
+﻿using System.Threading;
 using BankStatement.Data;
 using BankStatement.Extensions;
 using BankStatement.Windows;
+using Dalamud;
+using Dalamud.Game.Command;
+using Dalamud.Interface.Windowing;
+using Dalamud.IoC;
+using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Task = System.Threading.Tasks.Task;
 
 namespace BankStatement;
 
-// ReSharper disable once ClassNeverInstantiated.Global - Dalamud plugin entry point
+// ReSharper disable once UnusedType.Global - Dalamud plugin entry point
 public sealed class Plugin : IDalamudPlugin
 {
     private const string CommandName = "/gil";
@@ -48,25 +46,9 @@ public sealed class Plugin : IDalamudPlugin
         Configuration.Initialize(PluginInterface);
         CurrentStanding = Configuration.AccountStanding;
         PluginLog.Info("Restored state: ");
-        foreach (var (region, dataCenters) in CurrentStanding.regions)
-        {
-            foreach (var (dataCenter, worlds) in dataCenters.dataCenters)
-            {
-                foreach (var (world, characters) in worlds.worlds)
-                {
-                    foreach (var (characterName, character) in characters.characters)
-                    {
-                        PluginLog.Info($"{region}/{dataCenter}/{world}/{characterName} has {character.Gil} gil");
-                        foreach (var (retainerName, retainer) in character.Retainers)
-                        {
-                            PluginLog.Info($"{region}/{dataCenter}/{world}/{characterName}/{retainerName} has {retainer.Gil} gil");
-                        }
-                    }
-                }
-            }
-        }
+        CurrentStanding.Print(PluginLog);
         
-        MainWindow = new MainWindow(this, CurrentStanding);
+        MainWindow = new MainWindow(CurrentStanding);
 
         WindowSystem.AddWindow(MainWindow);
 
@@ -76,9 +58,8 @@ public sealed class Plugin : IDalamudPlugin
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
-
-        // Adds another button that is doing the same but for the main ui of the plugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
+        PluginInterface.UiBuilder.OpenConfigUi += () => {};
         
         GilRefresherTask = framework.Run(FetchCurrentGil, tokenSource.Token);
     }
@@ -91,23 +72,7 @@ public sealed class Plugin : IDalamudPlugin
     private void SaveData()
     {
         PluginLog.Info("Saving state: ");
-        foreach (var (region, dataCenters) in CurrentStanding.regions)
-        {
-            foreach (var (dataCenter, worlds) in dataCenters.dataCenters)
-            {
-                foreach (var (world, characters) in worlds.worlds)
-                {
-                    foreach (var (characterName, character) in characters.characters)
-                    {
-                        PluginLog.Info($"{region}/{dataCenter}/{world}/{characterName} has {character.Gil} gil");
-                        foreach (var (retainerName, retainer) in character.Retainers)
-                        {
-                            PluginLog.Info($"{region}/{dataCenter}/{world}/{characterName}/{retainerName} has {retainer.Gil} gil");
-                        }
-                    }
-                }
-            }
-        }
+        CurrentStanding.Print(PluginLog);
         Configuration.AccountStanding = CurrentStanding;
         PluginInterface.SavePluginConfig(Configuration);
     }
@@ -190,18 +155,4 @@ public sealed class Plugin : IDalamudPlugin
     private void DrawUI() => WindowSystem.Draw();
 
     public void ToggleMainUI() => MainWindow.Toggle();
-}
-
-public static class StdVectorExtensions
-{
-    public static IEnumerable<T> ToList<T> (this StdVector<T> vector) where T : unmanaged
-    {
-        var list = new List<T>();
-        var size = vector.Size();
-        for (uint i = 0; i < size; i++)
-        {
-            list.Add(vector.Get(i));
-        }
-        return list;
-    }
 }

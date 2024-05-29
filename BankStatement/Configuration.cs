@@ -1,7 +1,8 @@
-﻿using Dalamud.Configuration;
-using Dalamud.Plugin;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using BankStatement.Data;
+using Dalamud.Configuration;
+using Dalamud.Plugin;
 
 namespace BankStatement;
 
@@ -10,18 +11,18 @@ public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
-    public AccountStanding AccountStanding { get; set; } = new(new());
+    public AccountStanding AccountStanding { get; set; } = new(new Dictionary<string, Region>());
 
     [NonSerialized]
-    private DalamudPluginInterface? PluginInterface;
+    private DalamudPluginInterface? _pluginInterface;
 
     public void Initialize(DalamudPluginInterface pluginInterface)
     {
-        PluginInterface = pluginInterface;
+        _pluginInterface = pluginInterface;
     }
 
     public void Save()
     {
-        PluginInterface!.SavePluginConfig(this);
+        _pluginInterface!.SavePluginConfig(this);
     }
 }

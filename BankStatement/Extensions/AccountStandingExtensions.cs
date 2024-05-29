@@ -28,28 +28,28 @@ public static class AccountStandingExtensions
     /// </summary>
     public static void UpdateCharacterStanding(this AccountStanding accountStanding, string regionName, string dataCenterName, string worldName, string characterName, uint gil, Action saveData)
     {
-        if (!accountStanding.regions.TryGetValue(regionName, out var region))
+        if (!accountStanding.Regions.TryGetValue(regionName, out var region))
         {
-            region = new AccountStanding.Region(new Dictionary<string, AccountStanding.Region.DataCenter>());
-            accountStanding.regions[regionName] = region;
+            region = new Region(new Dictionary<string, DataCenter>());
+            accountStanding.Regions[regionName] = region;
         } 
         
-        if (!region.dataCenters.TryGetValue(dataCenterName, out var dataCenter))
+        if (!region.DataCenters.TryGetValue(dataCenterName, out var dataCenter))
         {
-            dataCenter = new AccountStanding.Region.DataCenter(new Dictionary<string, AccountStanding.Region.DataCenter.World>());
-            region.dataCenters[dataCenterName] = dataCenter;
+            dataCenter = new DataCenter(new Dictionary<string, World>());
+            region.DataCenters[dataCenterName] = dataCenter;
         }
         
-        if (!dataCenter.worlds.TryGetValue(worldName, out var world))
+        if (!dataCenter.Worlds.TryGetValue(worldName, out var world))
         {
-            world = new AccountStanding.Region.DataCenter.World(new Dictionary<string, AccountStanding.Region.DataCenter.World.Character>());
-            dataCenter.worlds[worldName] = world;
+            world = new World(new Dictionary<string, Character>());
+            dataCenter.Worlds[worldName] = world;
         }
         
-        if (!world.characters.TryGetValue(characterName, out var character))
+        if (!world.Characters.TryGetValue(characterName, out var character))
         {
-            character = new AccountStanding.Region.DataCenter.World.Character(characterName, gil, new Dictionary<string, AccountStanding.Region.DataCenter.World.Character.Retainer>());
-            world.characters[characterName] = character;
+            character = new Character(gil, new Dictionary<string, Retainer>());
+            world.Characters[characterName] = character;
             saveData();
             return;
         }
@@ -68,33 +68,33 @@ public static class AccountStandingExtensions
     /// </summary>
     public static void UpdateRetainerStanding(this AccountStanding accountStanding, string regionName, string dataCenterName, string worldName, string characterName, string retainerName, uint gil, Action saveData)
     {
-        if (!accountStanding.regions.TryGetValue(regionName, out var region))
+        if (!accountStanding.Regions.TryGetValue(regionName, out var region))
         {
-            region = new AccountStanding.Region(new Dictionary<string, AccountStanding.Region.DataCenter>());
-            accountStanding.regions[regionName] = region;
+            region = new Region(new Dictionary<string, DataCenter>());
+            accountStanding.Regions[regionName] = region;
         } 
         
-        if (!region.dataCenters.TryGetValue(dataCenterName, out var dataCenter))
+        if (!region.DataCenters.TryGetValue(dataCenterName, out var dataCenter))
         {
-            dataCenter = new AccountStanding.Region.DataCenter(new Dictionary<string, AccountStanding.Region.DataCenter.World>());
-            region.dataCenters[dataCenterName] = dataCenter;
+            dataCenter = new DataCenter(new Dictionary<string, World>());
+            region.DataCenters[dataCenterName] = dataCenter;
         }
         
-        if (!dataCenter.worlds.TryGetValue(worldName, out var world))
+        if (!dataCenter.Worlds.TryGetValue(worldName, out var world))
         {
-            world = new AccountStanding.Region.DataCenter.World(new Dictionary<string, AccountStanding.Region.DataCenter.World.Character>());
-            dataCenter.worlds[worldName] = world;
+            world = new World(new Dictionary<string, Character>());
+            dataCenter.Worlds[worldName] = world;
         }
         
-        if (!world.characters.TryGetValue(characterName, out var character))
+        if (!world.Characters.TryGetValue(characterName, out var character))
         {
-            character = new AccountStanding.Region.DataCenter.World.Character(characterName, gil, new Dictionary<string, AccountStanding.Region.DataCenter.World.Character.Retainer>());
-            world.characters[characterName] = character;
+            character = new Character(gil, new Dictionary<string, Retainer>());
+            world.Characters[characterName] = character;
         }
         
         if (!character.Retainers.TryGetValue(retainerName, out var retainer))
         {
-            retainer = new AccountStanding.Region.DataCenter.World.Character.Retainer(retainerName, gil);
+            retainer = new Retainer(gil);
             character.Retainers[retainerName] = retainer;
             saveData();
             return;
