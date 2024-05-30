@@ -60,7 +60,7 @@ public sealed class Plugin : IDalamudPlugin
         GilRefresherTask = framework.Run(FetchCurrentGil, tokenSource.Token);
 
         // add hook for 0x140F8B8B0
-        addonLifecycle.RegisterListener(AddonEvent.PreSetup, (type, args) =>
+        addonLifecycle.RegisterListener(AddonEvent.PreSetup, "Currency", (type, args) =>
         {
             if (MainWindow.IsOpen)
             {
@@ -68,7 +68,7 @@ public sealed class Plugin : IDalamudPlugin
             }
             MainWindow.Toggle();
         });
-        addonLifecycle.RegisterListener(AddonEvent.PreFinalize, (type, args) =>
+        addonLifecycle.RegisterListener(AddonEvent.PreFinalize, "Currency", (type, args) =>
         {
             if (!MainWindow.IsOpen)
             {
