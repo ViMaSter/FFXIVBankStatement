@@ -3,7 +3,7 @@ using BankStatement.Data;
 using BankStatement.Extensions;
 using BankStatement.Windows;
 using Dalamud;
-using Dalamud.Game.Command;
+using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -28,13 +28,14 @@ public sealed class Plugin : IDalamudPlugin
     public readonly AccountStanding CurrentStanding;
 
     private readonly CancellationTokenSource tokenSource = new();
-
+    
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] ICommandManager commandManager,
         [RequiredVersion("1.0")] IPluginLog pluginLog,
         [RequiredVersion("1.0")] IFramework framework,
-        [RequiredVersion("1.0")] IClientState clientState
+        [RequiredVersion("1.0")] IClientState clientState,
+        [RequiredVersion("1.0")] IAddonLifecycle addonLifecycle
             )
     {
         PluginInterface = pluginInterface;
@@ -52,16 +53,29 @@ public sealed class Plugin : IDalamudPlugin
 
         WindowSystem.AddWindow(MainWindow);
 
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
-        {
-            HelpMessage = "Show current gil across all characters and retainers"
-        });
-
         PluginInterface.UiBuilder.Draw += DrawUI;
-        PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
+        PluginInterface.UiBuilder.OpenMainUi += () => MainWindow.Toggle();
         PluginInterface.UiBuilder.OpenConfigUi += () => {};
         
         GilRefresherTask = framework.Run(FetchCurrentGil, tokenSource.Token);
+
+        // add hook for 0x140F8B8B0
+        addonLifecycle.RegisterListener(AddonEvent.PreSetup, (type, args) =>
+        {
+            if (MainWindow.IsOpen)
+            {
+                return;
+            }
+            MainWindow.Toggle();
+        });
+        addonLifecycle.RegisterListener(AddonEvent.PreFinalize, (type, args) =>
+        {
+            if (!MainWindow.IsOpen)
+            {
+                return;
+            }
+            MainWindow.Toggle();
+        });
     }
 
     public Task GilRefresherTask { get; set; }
@@ -146,13 +160,5 @@ public sealed class Plugin : IDalamudPlugin
         tokenSource.Cancel();
     }
 
-    private void OnCommand(string command, string args)
-    {
-        // in response to the slash command, just toggle the display status of our main ui
-        ToggleMainUI();
-    }
-
     private void DrawUI() => WindowSystem.Draw();
-
-    public void ToggleMainUI() => MainWindow.Toggle();
 }
