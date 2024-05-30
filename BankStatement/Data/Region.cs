@@ -18,6 +18,7 @@ public class Region(Dictionary<string, DataCenter> dataCenters)
     {
         foreach (var (name, dataCenter) in DataCenters)
         {
+            ImGui.SetNextItemOpen(true);
             if (ImGui.TreeNode($"{name} ({dataCenter.ToTotal().AddSpacing()} gil)###{name}")) 
             {
                 dataCenter.Draw();

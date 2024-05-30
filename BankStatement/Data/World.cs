@@ -18,6 +18,7 @@ public class World(Dictionary<string, Character> characters)
     {
         foreach (var (name, character) in Characters)
         {
+            ImGui.SetNextItemOpen(true);
             if (ImGui.TreeNode($"{name} ({character.ToTotal().AddSpacing()} gil)###{name}"))
             {
                 character.Draw();

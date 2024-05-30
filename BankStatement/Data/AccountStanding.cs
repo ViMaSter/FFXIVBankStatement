@@ -21,6 +21,7 @@ public class AccountStanding(Dictionary<string, Region> regions)
         
         foreach (var (name, region) in Regions)
         {
+            ImGui.SetNextItemOpen(true);
             if (ImGui.TreeNode($"{name} ({region.ToTotal().AddSpacing()} gil)###{name}"))
             {
                 region.Draw();
