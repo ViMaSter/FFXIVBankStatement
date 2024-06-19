@@ -66,7 +66,7 @@ public static class AccountStandingExtensions
     /// <summary>
     /// Persists new standing using <see cref="saveData"/>, if the standing has changed.
     /// </summary>
-    public static void UpdateRetainerStanding(this AccountStanding accountStanding, string regionName, string dataCenterName, string worldName, string characterName, string retainerName, uint gil, Action saveData)
+    public static void UpdateRetainerStandingInInventory(this AccountStanding accountStanding, string regionName, string dataCenterName, string worldName, string characterName, string retainerName, uint gil, Action saveData)
     {
         if (!accountStanding.Regions.TryGetValue(regionName, out var region))
         {
@@ -94,7 +94,7 @@ public static class AccountStandingExtensions
         
         if (!character.Retainers.TryGetValue(retainerName, out var retainer))
         {
-            retainer = new Retainer(gil);
+            retainer = new Retainer(gil, 0);
             character.Retainers[retainerName] = retainer;
             saveData();
             return;
@@ -106,6 +106,52 @@ public static class AccountStandingExtensions
         }
         
         retainer.Gil = gil;
+        saveData();
+    }
+    
+    /// <summary>
+    /// Persists new standing using <see cref="saveData"/>, if the standing has changed.
+    /// </summary>
+    public static void UpdateRetainerStandingInMarket(this AccountStanding accountStanding, string regionName, string dataCenterName, string worldName, string characterName, string retainerName, uint gil, Action saveData)
+    {
+        if (!accountStanding.Regions.TryGetValue(regionName, out var region))
+        {
+            region = new Region(new Dictionary<string, DataCenter>());
+            accountStanding.Regions[regionName] = region;
+        } 
+        
+        if (!region.DataCenters.TryGetValue(dataCenterName, out var dataCenter))
+        {
+            dataCenter = new DataCenter(new Dictionary<string, World>());
+            region.DataCenters[dataCenterName] = dataCenter;
+        }
+        
+        if (!dataCenter.Worlds.TryGetValue(worldName, out var world))
+        {
+            world = new World(new Dictionary<string, Character>());
+            dataCenter.Worlds[worldName] = world;
+        }
+        
+        if (!world.Characters.TryGetValue(characterName, out var character))
+        {
+            character = new Character(0, new Dictionary<string, Retainer>());
+            world.Characters[characterName] = character;
+        }
+        
+        if (!character.Retainers.TryGetValue(retainerName, out var retainer))
+        {
+            retainer = new Retainer(0, gil);
+            character.Retainers[retainerName] = retainer;
+            saveData();
+            return;
+        }
+
+        if (retainer.GilInMarket == gil)
+        {
+            return;
+        }
+        
+        retainer.GilInMarket = gil;
         saveData();
     }
 }

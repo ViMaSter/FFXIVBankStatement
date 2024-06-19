@@ -4,11 +4,16 @@ using BankStatement.Extensions;
 using BankStatement.Windows;
 using Dalamud;
 using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Hooking;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using Task = System.Threading.Tasks.Task;
 
 namespace BankStatement;
@@ -28,7 +33,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly AccountStanding CurrentStanding;
 
     private readonly CancellationTokenSource tokenSource = new();
-    
+
     public Plugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
         [RequiredVersion("1.0")] ICommandManager commandManager,
@@ -38,6 +43,9 @@ public sealed class Plugin : IDalamudPlugin
         [RequiredVersion("1.0")] IAddonLifecycle addonLifecycle
             )
     {
+        
+        // ECommonsMain.Init(pluginInterface, this);
+        
         PluginInterface = pluginInterface;
         CommandManager = commandManager;
         PluginLog = pluginLog;
@@ -67,6 +75,27 @@ public sealed class Plugin : IDalamudPlugin
                 return;
             }
             MainWindow.Toggle();
+        });
+        // RegisterListener PostSetup for "RetainerSellList", 
+        addonLifecycle.RegisterListener(AddonEvent.PostSetup, "RetainerSellList", (type, args) =>
+        {
+            unsafe
+            {
+                var retainerSellList = (AtkUnitBase*)args.Addon;
+                if (retainerSellList == null)
+                {
+                    return;
+                }
+                
+                // get AtkResNode -> ListComponentNode -> for each ListItemRenderer -> [retainerName: get first TextNode, gil: get second ResNode -> get firstTextNode]
+                var list = retainerSellList->UldManager.NodeList;
+                if (list == null)
+                {
+                    return;
+                }
+
+                CurrentStanding.UpdateRetainerStandingInMarket("Europe", "Chaos", "Cerberus", "Test", retainerName, gil, SaveData);
+            }
         });
         addonLifecycle.RegisterListener(AddonEvent.PreFinalize, "Currency", (type, args) =>
         {
@@ -148,7 +177,17 @@ public sealed class Plugin : IDalamudPlugin
                     }
                     var byteArrayOfName = retainer->Name;
                     var retainerName = new string((sbyte*)byteArrayOfName);
-                    CurrentStanding.UpdateRetainerStanding(homeWorldRegion, homeWorldDataCenter, homeWorldName, currentCharacterName, retainerName, retainer->Gil, SaveData);
+                    CurrentStanding.UpdateRetainerStandingInInventory(homeWorldRegion, homeWorldDataCenter, homeWorldName, currentCharacterName, retainerName, retainer->Gil, SaveData);
+                }
+
+                {
+                    var activeRetainer = RetainerManager.Instance()->GetActiveRetainer();
+                    if (activeRetainer == null)
+                    {
+                        return;
+                    }
+                    var retainerName = new string((sbyte*)activeRetainer->Name);
+                    CurrentStanding.UpdateRetainerStandingInMarket(homeWorldRegion, homeWorldDataCenter, homeWorldName, currentCharacterName, retainerName, activeRetainer->Gil, SaveData);
                 }
             }
         }

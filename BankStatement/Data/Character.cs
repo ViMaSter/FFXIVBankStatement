@@ -22,7 +22,8 @@ public class Character(long gil, Dictionary<string, Retainer> retainers)
         foreach (var (name, retainer) in Retainers)
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPos().X + 20);
-            ImGui.Text($"{name} ({retainer.ToTotal().AddSpacing()} gil)");
+            ImGui.TreePush(name);
+            retainer.Draw();
         }
     }
 }

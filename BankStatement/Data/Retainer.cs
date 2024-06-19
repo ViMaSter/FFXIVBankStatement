@@ -3,9 +3,10 @@ using ImGuiNET;
 
 namespace BankStatement.Data;
 
-public class Retainer(long gil)
+public class Retainer(long gil, long gilInMarket)
 {
     public long Gil { get; set; } = gil;
+    public long GilInMarket { get; set; } = gilInMarket;
 
     public long ToTotal()
     {
@@ -14,6 +15,7 @@ public class Retainer(long gil)
 
     public void Draw()
     {
-        ImGui.Text($"{Gil.AddSpacing()} gil");
+        ImGui.Text($"Inventory: {Gil.AddSpacing()} gil");
+        ImGui.Text($"Market: {GilInMarket.AddSpacing()} gil");
     }
 }
