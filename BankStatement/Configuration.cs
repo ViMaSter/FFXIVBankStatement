@@ -14,9 +14,9 @@ public class Configuration : IPluginConfiguration
     public AccountStanding AccountStanding { get; set; } = new(new Dictionary<string, Region>());
 
     [NonSerialized]
-    private DalamudPluginInterface? _pluginInterface;
+    private IDalamudPluginInterface? _pluginInterface;
 
-    public void Initialize(DalamudPluginInterface pluginInterface)
+    public void Initialize(IDalamudPluginInterface pluginInterface)
     {
         _pluginInterface = pluginInterface;
     }

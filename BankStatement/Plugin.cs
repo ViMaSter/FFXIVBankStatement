@@ -2,10 +2,9 @@
 using BankStatement.Data;
 using BankStatement.Extensions;
 using BankStatement.Windows;
-using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Interface.Windowing;
-using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -16,10 +15,7 @@ namespace BankStatement;
 // ReSharper disable once UnusedType.Global - Dalamud plugin entry point
 public sealed class Plugin : IDalamudPlugin
 {
-    private const string CommandName = "/gil";
-
-    private DalamudPluginInterface PluginInterface { get; init; }
-    private ICommandManager CommandManager { get; init; }
+    private IDalamudPluginInterface PluginInterface { get; init; }
     public Configuration Configuration { get; init; }
 
     public readonly WindowSystem WindowSystem = new("BankStatement");
@@ -30,16 +26,14 @@ public sealed class Plugin : IDalamudPlugin
     private readonly CancellationTokenSource tokenSource = new();
     
     public Plugin(
-        [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-        [RequiredVersion("1.0")] ICommandManager commandManager,
-        [RequiredVersion("1.0")] IPluginLog pluginLog,
-        [RequiredVersion("1.0")] IFramework framework,
-        [RequiredVersion("1.0")] IClientState clientState,
-        [RequiredVersion("1.0")] IAddonLifecycle addonLifecycle
+        IDalamudPluginInterface pluginInterface,
+        IPluginLog pluginLog,
+        IFramework framework,
+        IClientState clientState,
+        IAddonLifecycle addonLifecycle
             )
     {
         PluginInterface = pluginInterface;
-        CommandManager = commandManager;
         PluginLog = pluginLog;
         ClientState = clientState;
 
@@ -60,7 +54,7 @@ public sealed class Plugin : IDalamudPlugin
         GilRefresherTask = framework.Run(FetchCurrentGil, tokenSource.Token);
 
         // add hook for 0x140F8B8B0
-        addonLifecycle.RegisterListener(AddonEvent.PreSetup, "Currency", (type, args) =>
+        addonLifecycle.RegisterListener(AddonEvent.PreSetup, "Currency", (_, _) =>
         {
             if (MainWindow.IsOpen)
             {
@@ -68,7 +62,7 @@ public sealed class Plugin : IDalamudPlugin
             }
             MainWindow.Toggle();
         });
-        addonLifecycle.RegisterListener(AddonEvent.PreFinalize, "Currency", (type, args) =>
+        addonLifecycle.RegisterListener(AddonEvent.PreFinalize, "Currency", (_, _) =>
         {
             if (!MainWindow.IsOpen)
             {
@@ -146,8 +140,7 @@ public sealed class Plugin : IDalamudPlugin
                     {
                         continue;
                     }
-                    var byteArrayOfName = retainer->Name;
-                    var retainerName = new string((sbyte*)byteArrayOfName);
+                    var retainerName = System.Text.Encoding.UTF8.GetString(retainer->Name.ToArray());
                     CurrentStanding.UpdateRetainerStanding(homeWorldRegion, homeWorldDataCenter, homeWorldName, currentCharacterName, retainerName, retainer->Gil, SaveData);
                 }
             }
