@@ -19,7 +19,7 @@ public class DataCenter(Dictionary<string, World> worlds)
         foreach (var (name, world) in Worlds)
         {
             ImGui.SetNextItemOpen(true);
-            if (ImGui.TreeNode($"{name} ({world.ToTotal().AddSpacing()} gil)###{name}"))
+            if (ImGui.TreeNode($"{name}: {world.ToTotal().AddSpacing()} gil###{name}"))
             {
                 world.Draw();
                 ImGui.TreePop();

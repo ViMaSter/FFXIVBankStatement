@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Text;
+using System.Threading;
 using BankStatement.Data;
 using BankStatement.Extensions;
 using BankStatement.Windows;
@@ -92,7 +94,7 @@ public sealed class Plugin : IDalamudPlugin
             await Task.Delay(1000, tokenSource.Token);
             unsafe
             {
-                var homeWorld = ClientState.LocalPlayer?.HomeWorld.GetWithLanguage(ClientLanguage.English);
+                var homeWorld = ClientState.LocalPlayer?.HomeWorld.Value;
                 var homeWorldName = homeWorld?.Name.ToString();
                 
                 if (homeWorld?.DataCenter.Value == null)
@@ -100,15 +102,15 @@ public sealed class Plugin : IDalamudPlugin
                     PluginLog.Warning("Current character world data center is null");
                     continue;
                 }
-                
-                var homeWorldDataCenter = homeWorld.DataCenter.Value?.Name.ToString();
+
+                var homeWorldDataCenter = homeWorld.Value.DataCenter.Value.Name.ToString();
                 if (string.IsNullOrEmpty(homeWorldDataCenter))
                 {
                     PluginLog.Warning("Current character world data center is null");
                     continue;
                 }
                 
-                var homeWorldRegion = homeWorld.DataCenter?.Value?.Region.GetRegionName();
+                var homeWorldRegion = homeWorld.Value.DataCenter.Value.Region.GetRegionName();
                 if (string.IsNullOrEmpty(homeWorldRegion))
                 {
                     PluginLog.Warning("Current character world region is null");
@@ -140,8 +142,15 @@ public sealed class Plugin : IDalamudPlugin
                     {
                         continue;
                     }
-                    var retainerName = System.Text.Encoding.UTF8.GetString(retainer->Name.ToArray());
-                    CurrentStanding.UpdateRetainerStanding(homeWorldRegion, homeWorldDataCenter, homeWorldName, currentCharacterName, retainerName, retainer->Gil, SaveData);
+                    var retainerNameBytes = retainer->Name.ToArray();
+                    // find first 00 and only take bytes before that
+                    var first00 = Array.IndexOf(retainerNameBytes, (byte) 0);
+                    if (first00 != -1)
+                    {
+                        retainerNameBytes = retainerNameBytes[..first00];
+                    }
+                    var retainerNameString = Encoding.UTF8.GetString(retainerNameBytes);
+                    CurrentStanding.UpdateRetainerStanding(homeWorldRegion, homeWorldDataCenter, homeWorldName, currentCharacterName, retainerNameString, retainer->Gil, SaveData);
                 }
             }
         }

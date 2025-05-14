@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using BankStatement.Extensions;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
@@ -22,7 +23,7 @@ public class AccountStanding(Dictionary<string, Region> regions)
         foreach (var (name, region) in Regions)
         {
             ImGui.SetNextItemOpen(true);
-            if (ImGui.TreeNode($"{name} ({region.ToTotal().AddSpacing()} gil)###{name}"))
+            if (ImGui.TreeNode($"{name}: {region.ToTotal().AddSpacing()} gil###{name}"))
             {
                 region.Draw();
                 ImGui.TreePop();
@@ -42,7 +43,7 @@ public class AccountStanding(Dictionary<string, Region> regions)
                       from world in dataCenter.Value.Worlds
                       from character in world.Value.Characters
                       from retainer in character.Value.Retainers
-                      select $"{region.Key}/{dataCenter.Key}/{world.Key}/{retainer.Key} has {retainer.Value.Gil} gil";
+                      select $"{region.Key}/{dataCenter.Key}/{world.Key}/{retainer.Key} has {retainer.Value.Gil} gil ({Encoding.UTF8.GetBytes(retainer.Key).Select(b => b.ToString("X2")).Aggregate((a, b) => a + b)})";
         
         foreach (var info in characterInfo.Concat(retainerInfo))
         {
